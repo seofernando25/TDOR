@@ -1,17 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
-project(TDOR VERSION 0.1.0)
+project(TDOR VERSION 0.0.0)
 
-include(CTest)
-enable_testing()
+#include(CTest)
+#enable_testing()
 
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
+# Lua
+include(FindLua)
+find_package(Lua REQUIRED)
+include_directories(${PROJECT_NAME}  ${LUA_INCLUDE_DIR})
 
+# Raylib
+find_package(raylib CONFIG QUIET)
 
-find_package(raylib 3.0 QUIET)
-
-if (NOT raylib_FOUND) # If there's none, fetch and build raylib
+if (NOT raylib_FOUND)
   include(FetchContent)
 
   FetchContent_Declare(
@@ -28,13 +29,8 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
 
     # build raylib
     add_subdirectory(${raylib_SOURCE_DIR} ${raylib_BINARY_DIR})
-
   endif()
-
 endif()
 
 
-
-
-add_executable(${PROJECT_NAME} main.c)
-target_link_libraries(${PROJECT_NAME} raylib)
+add_subdirectory(TDOR)
