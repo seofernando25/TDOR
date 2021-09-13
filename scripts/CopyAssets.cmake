@@ -1,0 +1,5 @@
+file(GLOB ASSETS "${PROJECT_SOURCE_DIR}/assets/*")
+foreach(ASSET ${ASSETS})
+    message("Processing ${ASSET}")
+    file(GENERATE OUTPUT ${ASSET} INPUT ${ASSET})
+endforeach()

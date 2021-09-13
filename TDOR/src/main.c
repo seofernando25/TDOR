@@ -61,7 +61,7 @@ int main(void)
     Vector2 wallStart = {3, 0};
     Vector2 wallEnd = {4, 2};
     // Main game loop
-    while (!WindowShouldClose()) // Detect window close button or ESC keyaaad
+    while (!WindowShouldClose()) // Detect window close button or ESC
     {
         // Update
         //----------------------------------------------------------------------------------
@@ -203,7 +203,6 @@ int main(void)
             }
         }
 
-        DrawFPS(0, 0);
         // Prints the player position
         DrawText("Player position:", 10, 10, 20, WHITE);
         DrawText(TextFormat("(%.2f, %.2f)", playerPosition.x, playerPosition.y), 10, 30, 20, WHITE);
@@ -211,6 +210,7 @@ int main(void)
         EndTextureMode();
 
         BeginDrawing();
+        DrawFPS(0, 0);
         ClearBackground(BLACK); // Clear screen background
 
         //Draws the game texture to the screen
