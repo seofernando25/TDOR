@@ -1,17 +1,67 @@
 #include "raylib.h"
 #include "raymath.h"
 
+#include "l_config.h"
 #include "c_actor.h"
 #include "r_general.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "io_gdata.h"
+#include <time.h>
+
+// #define LUA_LIB
+// #include "lua.h"
+// #include "lauxlib.h"
 
 #define WINDOW_DEFAULT_W 1280
 #define WINDOW_DEFAULT_H 720
 
+// Custom logging funtion
+void LogCustom(int msgType, const char *text, va_list args)
+{
+    char timeStr[64] = {0};
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+
+    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
+    printf("[%s] ", timeStr);
+
+    switch (msgType)
+    {
+    case LOG_INFO:
+        printf("[INFO] : ");
+        break;
+    case LOG_ERROR:
+        printf("[ERROR]: ");
+        break;
+    case LOG_WARNING:
+        printf("[WARN] : ");
+        break;
+    case LOG_DEBUG:
+        printf("[DEBUG]: ");
+        break;
+    default:
+        break;
+    }
+
+    vprintf(text, args);
+    printf("\n");
+}
+
 int main(int argc, char *argv[])
 {
+    // GData *gdata = CreateGDATA();
+    // char *str1 = "Hi";
+    // char *str2 = "Among us";
+    // WriteToGDATA(gdata, "HI", sizeof(char) * strlen(str1), str1);
+    // WriteToGDATA(gdata, "TEST", sizeof(char) * strlen(str2), str2);
+    // SaveGDATA(gdata, "test.gdata");
+
+    // Set the stdout to a file
+    // freopen("log.txt", "w", stdout);
+    // SetTraceLogCallback(LogCustom);
+
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(WINDOW_DEFAULT_W, WINDOW_DEFAULT_H, "TDOR");
     SetWindowMinSize(512, 288);
@@ -19,9 +69,9 @@ int main(int argc, char *argv[])
     SetTargetFPS(60);
     // SetExitKey(0); // Prevents ESC from closing the window
 
-    Texture2D droog = LoadTexture("assets/droog.png");
-    Texture2D brick = LoadTexture("assets/brick.png");
-    SetTextureFilter(droog, TEXTURE_FILTER_POINT); // PixelArt texture filtering
+    // Texture2D droog = LoadTexture("assets/droog.png");
+    // Texture2D brick = LoadTexture("assets/brick.png");
+    // SetTextureFilter(droog, TEXTURE_FILTER_POINT); // PixelArt texture filtering
     Camera camera = CreateDefaultCamera();
 
     SetCameraMode(camera, CAMERA_CUSTOM);
@@ -31,7 +81,7 @@ int main(int argc, char *argv[])
     Wall wall;
     WallData data;
     data.height = 0;
-    data.texture = droog;
+
     // wall.data = &data;
     Vector2 p1 = (Vector2){0, 0};
     Vector2 p2 = (Vector2){5, 2};
@@ -63,9 +113,6 @@ int main(int argc, char *argv[])
         BeginMode3D(camera);
         DrawGrid(10, 1.0);
 
-        Vector3 cameraDirection = Vector3Normalize(Vector3Subtract(camera.position, wallTransform.translation));
-        Vector3 cameraRight = Vector3Normalize(Vector3CrossProduct(camera.up, cameraDirection));
-        Vector3 cameraUp = Vector3CrossProduct(cameraDirection, cameraRight);
         // wallTransform.scale.x = 3 + sin(time) * 2.0f;
 
         // region Wall rendering

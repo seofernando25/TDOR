@@ -35,6 +35,7 @@ int main(void)
 
     RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
+
     SetTargetFPS(60);
 
     Vector2 playerPosition = (Vector2){1, 2};

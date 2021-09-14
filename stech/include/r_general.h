@@ -1,7 +1,4 @@
-// General render functions
-
-#ifndef R_GENERAL_H
-#define R_GENERAL_H
+#pragma once
 
 #include "c_wall.h"
 #include "c_walldata.h"
@@ -44,5 +41,3 @@ void DrawWall(Mesh wallMesh, Material material, Transform wallTransform, Vector2
     wallTransform.rotation = QuaternionFromEuler(-PI / 2, -wallAngle, 0);
     DrawMesh(wallMesh, material, getTransformMatrix(wallTransform));
 }
-
-#endif

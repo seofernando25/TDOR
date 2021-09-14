@@ -1,7 +1,4 @@
-
-
-#ifndef C_LEVEL_H
-#define C_LEVEL_H
+#pragma once
 
 #include "c_actor.h"
 #include "c_wall.h"
