@@ -1,7 +1,6 @@
 #pragma once
 
-#include "c_wall.h"
-#include "c_walldata.h"
+#include "mp_core.h"
 #include "raylib.h"
 
 Matrix getTransformMatrix(Transform transform)
@@ -26,7 +25,7 @@ Camera CreateDefaultCamera()
     return camera;
 }
 
-// This needs to be worked on
+// This needs to be worked on its just going to be too slow
 void DrawWall(Mesh wallMesh, Material material, Transform wallTransform, Vector2 p1, Vector2 p2)
 {
     Vector3 wallCenter = Vector3Add(Vector3Scale((Vector3){p1.x, 0, p1.y}, 0.5f), Vector3Scale((Vector3){p2.x, 0, p2.y}, 0.5f));
@@ -36,8 +35,8 @@ void DrawWall(Mesh wallMesh, Material material, Transform wallTransform, Vector2
     float wallAngle = atan2(wallDistanceDelta.y, wallDistanceDelta.x);
     wallTransform.scale.x = Vector2Length(wallDistanceDelta);
 
-    wallTransform.rotation = QuaternionFromEuler(PI / 2, -wallAngle, 0);
+    wallTransform.rotation = QuaternionFromEuler(PI / 2, 0, wallAngle);
     DrawMesh(wallMesh, material, getTransformMatrix(wallTransform));
-    wallTransform.rotation = QuaternionFromEuler(-PI / 2, -wallAngle, 0);
+    wallTransform.rotation = QuaternionFromEuler(-PI / 2, 0, -wallAngle);
     DrawMesh(wallMesh, material, getTransformMatrix(wallTransform));
 }

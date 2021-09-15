@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
-project(TDOR VERSION 0.0.0)
+project(TDOR VERSION 0.0.0 LANGUAGES C)
 
 # Dependencies
 include(${CMAKE_SOURCE_DIR}/cmake/EnsureRayLib.cmake)
-link_libraries(raylib)
 
 include(FindLua)
 find_package(Lua REQUIRED)

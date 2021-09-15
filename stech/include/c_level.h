@@ -1,7 +1,7 @@
 #pragma once
 
 #include "c_actor.h"
-#include "c_wall.h"
+#include "mp_core.h"
 #include "raylib.h"
 
 struct Level

@@ -76,35 +76,6 @@ int main(void)
         virtualMouse.y = (mouse.y - (GetScreenHeight() - (VIRTUAL_HEIGHT * scale)) * 0.5f) / scale;
         virtualMouse = ClampValue(virtualMouse, (Vector2){0, 0}, (Vector2){(float)VIRTUAL_WIDTH, (float)VIRTUAL_HEIGHT});
 
-        // Update player distance if the player presses w it goes closer to the wall
-        // if it presses s it goes away
-        if (IsKeyDown(KEY_W))
-        {
-            playerPosition.x += 0.01f;
-        }
-        if (IsKeyDown(KEY_S))
-        {
-            playerPosition.x -= 0.01f;
-        }
-        if (IsKeyDown(KEY_A))
-        {
-            playerPosition.y -= 0.01f;
-        }
-        if (IsKeyDown(KEY_D))
-        {
-            playerPosition.y += 0.01f;
-        }
-
-        // Update player rotation
-        if (IsKeyDown(KEY_LEFT))
-        {
-            playerRotation -= 0.01f;
-        }
-        if (IsKeyDown(KEY_RIGHT))
-        {
-            playerRotation += 0.01f;
-        }
-
         BeginTextureMode(target);
 
         ClearBackground(GRAY); // Clear render texture background color

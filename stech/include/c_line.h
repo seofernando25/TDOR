@@ -1,7 +1,6 @@
 #pragma once
 
-typedef struct Line
-{
-    unsigned startVertex;
-    unsigned endVertex;
-} Line;
+typedef struct LineRef {
+    unsigned startVert;
+    unsigned endVert;
+} LineRef;

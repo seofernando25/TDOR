@@ -1,134 +1,156 @@
 #include "raylib.h"
-#include "raymath.h"
 
-#include "l_config.h"
-#include "c_actor.h"
-#include "r_general.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "io_gdata.h"
-#include <time.h>
+#define RAYGUI_IMPLEMENTATION
+#define RAYGUI_SUPPORT_RICONS
 
-// #define LUA_LIB
-// #include "lua.h"
-// #include "lauxlib.h"
+#include "r_raygui.h"
 
-#define WINDOW_DEFAULT_W 1280
-#define WINDOW_DEFAULT_H 720
+#undef RAYGUI_IMPLEMENTATION
 
-// Custom logging funtion
-void LogCustom(int msgType, const char *text, va_list args)
-{
-    char timeStr[64] = {0};
-    time_t now = time(NULL);
-    struct tm *tm_info = localtime(&now);
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
 
-    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", tm_info);
-    printf("[%s] ", timeStr);
+#define CMD_BUFFER_SIZE 255
+#define FONT_SIZE 24
 
-    switch (msgType)
-    {
-    case LOG_INFO:
-        printf("[INFO] : ");
-        break;
-    case LOG_ERROR:
-        printf("[ERROR]: ");
-        break;
-    case LOG_WARNING:
-        printf("[WARN] : ");
-        break;
-    case LOG_DEBUG:
-        printf("[DEBUG]: ");
-        break;
-    default:
-        break;
+bool SInputLine(int x, int y, char *text, int buffSize, bool editMode) {
+    if (editMode) {
+        int key = GetCharPressed();      // Returns codepoint as Unicode
+        int keyCount = (int) strlen(text);
+        bool bufferNotFull = keyCount < (buffSize - 1);
+        // Only allow keys in range [32..125]
+        if (bufferNotFull && key >= 32) {
+            text[keyCount] = key;
+            keyCount++;
+            text[keyCount] = '\0';
+        } else if (buffSize > 0 && IsKeyPressed(KEY_BACKSPACE)) {
+            keyCount--;
+            text[keyCount] = '\0';
+        }
     }
-
-    vprintf(text, args);
-    printf("\n");
+    DrawText(text, x, y, FONT_SIZE, BLACK);
+    return IsKeyPressed(KEY_ENTER);
 }
 
-int main(int argc, char *argv[])
-{
-    // GData *gdata = CreateGDATA();
-    // char *str1 = "Hi";
-    // char *str2 = "Among us";
-    // WriteToGDATA(gdata, "HI", sizeof(char) * strlen(str1), str1);
-    // WriteToGDATA(gdata, "TEST", sizeof(char) * strlen(str2), str2);
-    // SaveGDATA(gdata, "test.gdata");
+static char consoleInputEntry[CMD_BUFFER_SIZE] = "";
 
-    // Set the stdout to a file
-    // freopen("log.txt", "w", stdout);
-    // SetTraceLogCallback(LogCustom);
+void LuaGetTableField(lua_State *L, const char *tableName, const char *func) {
+    lua_getglobal(L, tableName);
+    int tableIndex = lua_gettop(L);
+    lua_getfield(L, tableIndex, func);
+}
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
-    InitWindow(WINDOW_DEFAULT_W, WINDOW_DEFAULT_H, "TDOR");
-    SetWindowMinSize(512, 288);
+void LuaWrite(lua_State *L, const char *str) {
+    LuaGetTableField(L, "console", "write");
+    lua_pushstring(L, str);
+    if (lua_pcall(L, 1, 0, 0) != 0)
+        printf("There was an error talking with the log module, %s\n", lua_tostring(L, -1));
+    lua_pop(L, -1);
+}
 
+void LuaLog(lua_State *L, const char *str) {
+    LuaGetTableField(L, "console", "log");
+    lua_pushstring(L, str);
+    if (lua_pcall(L, 1, 0, 0) != 0)
+        printf("There was an error talking with the log module, %s\n", lua_tostring(L, -1));
+    lua_pop(L, -1);
+}
+
+const char *LuaGetConsoleBuffer(lua_State *L) {
+    LuaGetTableField(L, "console", "screen_buffer");
+    const char *str = lua_tostring(L, -1);
+    lua_pop(L, -1);
+    return str;
+}
+
+int main() {
+
+    int screenWidth = 690;
+    int screenHeight = 560;
+
+    InitWindow(screenWidth, screenHeight, "TDOR Lua test");
+    SetExitKey(0);
     SetTargetFPS(60);
-    // SetExitKey(0); // Prevents ESC from closing the window
 
-    // Texture2D droog = LoadTexture("assets/droog.png");
-    // Texture2D brick = LoadTexture("assets/brick.png");
-    // SetTextureFilter(droog, TEXTURE_FILTER_POINT); // PixelArt texture filtering
-    Camera camera = CreateDefaultCamera();
+    // Initializes lua
 
-    SetCameraMode(camera, CAMERA_CUSTOM);
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L); // We probably should not open sensitive libraries such as os
 
-    // camera.target = (Vector3){0.0f, 0.0f, 0.0f};
 
-    Wall wall;
-    WallData data;
-    data.height = 0;
+//    int error = luaL_dostring(L, "serpent = require('serpent')");
 
-    // wall.data = &data;
-    Vector2 p1 = (Vector2){0, 0};
-    Vector2 p2 = (Vector2){5, 2};
-
-    wall.line.startVertex = 0;
-    wall.line.endVertex = 1;
-
-    Mesh wallMesh = GenMeshPlane(1, 1, 1, 1);
-    Transform wallTransform = {0};
-    wallTransform.scale = (Vector3){1, 1, 1};
-    Material defaultMat = LoadMaterialDefault();
-    while (!WindowShouldClose())
-    {
-        // Orbit arround center
-        float time = GetTime();
-        float angle = time * 0.5f;
-        p2 = (Vector2){cosf(-angle * 2.0f) * 2.0f, sinf(-angle * 2.0f) * 2.0f};
-        camera.position.x = cos(angle) * 5.0f;
-        camera.position.y = 2.0f;
-        camera.position.z = sin(angle) * 5.0f;
-        camera.target = (Vector3){0.0f, 1.0f, 0.0f};
-        UpdateCamera(&camera);
-
-        // Stuff
-        BeginDrawing();
-        ClearBackground(GRAY); // Clear screen background
-
-        // Draw 3D stuff
-        BeginMode3D(camera);
-        DrawGrid(10, 1.0);
-
-        // wallTransform.scale.x = 3 + sin(time) * 2.0f;
-
-        // region Wall rendering
-        DrawWall(wallMesh, defaultMat, wallTransform, p1, p2);
-
-        DrawSphere((Vector3){p1.x, 0.f, p1.y}, 0.2f, GREEN);
-        DrawSphere((Vector3){p1.x, 1.f, p1.y}, 0.2f, GREEN);
-        DrawSphere((Vector3){p2.x, 0.f, p2.y}, 0.2f, GREEN);
-        DrawSphere((Vector3){p2.x, 1.f, p2.y}, 0.2f, GREEN);
-        // endregion
-        EndMode3D();
-
-        DrawFPS(0, 0);
-        EndDrawing();
+    int error = luaL_dofile(L, "data/core/lualib/init.lua");
+    if (error == LUA_OK) {
+        printf("Smooth!\n");
+    } else {
+        printf("Error loading file!\n");
     }
 
-    CloseWindow();
+    bool consoleToggle = true;
+
+    //--------------------------------------------------------------------------------------
+
+    bool wantsToClose = false;
+
+    // Main game loop
+    while (!wantsToClose)    // Detect window close button or ESC key
+    {
+        // Update
+        //----------------------------------------------------------------------------------
+        wantsToClose = WindowShouldClose();
+
+        if (IsKeyPressed(KEY_GRAVE)) {
+            consoleToggle = !consoleToggle;
+        }
+
+        //----------------------------------------------------------------------------------
+
+        // Draw
+        //----------------------------------------------------------------------------------
+        BeginDrawing();
+        ClearBackground(WHITE);
+
+
+        if (consoleToggle) {
+
+            DrawText(">", 0, 0, FONT_SIZE, BLACK);
+            if (SInputLine(FONT_SIZE, 0, consoleInputEntry, 255, true)) {
+                LuaWrite(L, "]");
+                LuaLog(L, consoleInputEntry);
+
+                int r = luaL_dostring(L, consoleInputEntry);
+                if (r == LUA_OK) {
+
+                } else {
+                    LuaLog(L, lua_tostring(L, -1));
+                }
+
+
+                consoleInputEntry[0] = '\0';
+            }
+            const char *screenBuf = LuaGetConsoleBuffer(L);
+            DrawText(screenBuf, 0, FONT_SIZE, FONT_SIZE, BLACK);
+
+            char result[32];
+            sprintf(result, "%d", lua_gettop(L));
+            DrawText(result, screenWidth - 2 * FONT_SIZE, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
+
+            DrawText("Lua stack: ", 0, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
+
+        }
+
+
+        EndDrawing();
+        //----------------------------------------------------------------------------------
+    }
+
+    // De-Initialization
+    //--------------------------------------------------------------------------------------
+    CloseWindow();        // Close window and OpenGL context
+    //--------------------------------------------------------------------------------------
+
+    lua_close(L);
     return 0;
 }
