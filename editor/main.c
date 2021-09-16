@@ -7,12 +7,10 @@
 
 #undef RAYGUI_IMPLEMENTATION
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include "c_lua.h"
 
 #define CMD_BUFFER_SIZE 255
-#define FONT_SIZE 24
+#define FONT_SIZE 8
 
 bool SInputLine(int x, int y, char *text, int buffSize, bool editMode) {
     if (editMode) {
@@ -35,35 +33,6 @@ bool SInputLine(int x, int y, char *text, int buffSize, bool editMode) {
 
 static char consoleInputEntry[CMD_BUFFER_SIZE] = "";
 
-void LuaGetTableField(lua_State *L, const char *tableName, const char *func) {
-    lua_getglobal(L, tableName);
-    int tableIndex = lua_gettop(L);
-    lua_getfield(L, tableIndex, func);
-}
-
-void LuaWrite(lua_State *L, const char *str) {
-    LuaGetTableField(L, "console", "write");
-    lua_pushstring(L, str);
-    if (lua_pcall(L, 1, 0, 0) != 0)
-        printf("There was an error talking with the log module, %s\n", lua_tostring(L, -1));
-    lua_pop(L, -1);
-}
-
-void LuaLog(lua_State *L, const char *str) {
-    LuaGetTableField(L, "console", "log");
-    lua_pushstring(L, str);
-    if (lua_pcall(L, 1, 0, 0) != 0)
-        printf("There was an error talking with the log module, %s\n", lua_tostring(L, -1));
-    lua_pop(L, -1);
-}
-
-const char *LuaGetConsoleBuffer(lua_State *L) {
-    LuaGetTableField(L, "console", "screen_buffer");
-    const char *str = lua_tostring(L, -1);
-    lua_pop(L, -1);
-    return str;
-}
-
 int main() {
 
     int screenWidth = 690;
@@ -79,21 +48,16 @@ int main() {
     luaL_openlibs(L); // We probably should not open sensitive libraries such as os
 
 
-//    int error = luaL_dostring(L, "serpent = require('serpent')");
 
     int error = luaL_dofile(L, "data/core/lualib/init.lua");
     if (error == LUA_OK) {
-        printf("Smooth!\n");
+        printf("Lua initialized\n");
     } else {
-        printf("Error loading file!\n");
+        ConsoleLog(L, lua_tostring(L, -1));
     }
 
-    bool consoleToggle = true;
-
-    //--------------------------------------------------------------------------------------
 
     bool wantsToClose = false;
-
     // Main game loop
     while (!wantsToClose)    // Detect window close button or ESC key
     {
@@ -102,8 +66,9 @@ int main() {
         wantsToClose = WindowShouldClose();
 
         if (IsKeyPressed(KEY_GRAVE)) {
-            consoleToggle = !consoleToggle;
+            StackDump(L);
         }
+
 
         //----------------------------------------------------------------------------------
 
@@ -112,34 +77,64 @@ int main() {
         BeginDrawing();
         ClearBackground(WHITE);
 
+        // UI Stuff
 
-        if (consoleToggle) {
+        // Put UI elements to top
+        QuickPushVariable(L, "ui.elements");
+        int tablePos = lua_gettop(L);
+        lua_pushnil(L);
+        while (lua_next(L, tablePos) != 0) {
+            // region Get rectangle
+            PushField(L, "rect");
+            int top = lua_gettop(L);
+            Rectangle rect = GetRect(L, top);
+            DrawRectangleRec(rect, GRAY);
+            lua_pop(L, 1);
+            // endregion
 
-            DrawText(">", 0, 0, FONT_SIZE, BLACK);
-            if (SInputLine(FONT_SIZE, 0, consoleInputEntry, 255, true)) {
-                LuaWrite(L, "]");
-                LuaLog(L, consoleInputEntry);
+            // region Get children
+            PushField(L, "children");
+            int tp = lua_gettop(L);
+            lua_pushnil(L);
+            while (lua_next(L, tp) != 0) {
+                // Get children rect
+                PushField(L, "rect");
+                Rectangle rec = GetRect(L, lua_gettop(L));
+                DrawRectangleRec(rec, GRAY);
+                lua_pop(L, 1);
 
-                int r = luaL_dostring(L, consoleInputEntry);
-                if (r == LUA_OK) {
-
-                } else {
-                    LuaLog(L, lua_tostring(L, -1));
-                }
-
-
-                consoleInputEntry[0] = '\0';
+                lua_pop(L, 1);
             }
-            const char *screenBuf = LuaGetConsoleBuffer(L);
-            DrawText(screenBuf, 0, FONT_SIZE, FONT_SIZE, BLACK);
 
-            char result[32];
-            sprintf(result, "%d", lua_gettop(L));
-            DrawText(result, screenWidth - 2 * FONT_SIZE, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
+            lua_pop(L, 1);
+            // endregion
 
-            DrawText("Lua stack: ", 0, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
-
+            lua_pop(L, 1); // Clean element
         }
+        lua_pop(L, 1); // Remove ui.elements
+
+
+
+
+        // Console stuff
+        // TODO Move console to UI itself
+
+        DrawText(">", 0, 0, FONT_SIZE, BLACK);
+        if (SInputLine(FONT_SIZE, 0, consoleInputEntry, 255, true)) {
+            ConsoleWrite(L, "]");
+            ConsoleLog(L, consoleInputEntry);
+            DoString(L, consoleInputEntry);
+            consoleInputEntry[0] = '\0';
+        }
+
+        const char *screenBuf = GetConsoleBuffer(L);
+        DrawText(screenBuf, 0, FONT_SIZE, FONT_SIZE, BLACK);
+
+        char luaStackSize[32];
+        sprintf(luaStackSize, "%d", lua_gettop(L));
+        DrawText(luaStackSize, screenWidth - 3 * FONT_SIZE, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
+
+        DrawText("Lua stack: ", 0, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
 
 
         EndDrawing();

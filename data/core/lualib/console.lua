@@ -3,12 +3,16 @@ local console = {
     screen_buffer = ""
 }
 
-function console.write(str)
-    console.screen_buffer = console.screen_buffer .. str
+function console.write(obj)
+    console.screen_buffer = console.screen_buffer .. tostring(obj)
 end
 
-function console.log(str)
-    console.screen_buffer = console.screen_buffer .. str .. "\n"
+function console.log(obj)
+    console.screen_buffer = console.screen_buffer .. tostring(obj) .. "\n"
+end
+
+function console.clear()
+    console.screen_buffer = ""
 end
 
 return console

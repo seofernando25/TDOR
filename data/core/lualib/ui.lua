@@ -1,37 +1,74 @@
-local ui = {}
+local ui = {
+    elements = {}
+}
+
+--region ui base functions
+
+function ui.AddElement(element)
+    table.insert(ui.elements, element)
+end
+
+--endregion
+
+
 
 --region ui.Panel
 
-ui.Pane = {
+-- TODO Decide if I wan't to create getters and setters for all this shite or just initialize the whole "object"
+
+ui.Panel = {
     visible = 1,
     enabled = 1,
-    id = "", --unique reference to pane using
-    anchors = {
-        min_x = 0,
-        min_y = 0,
-        max_x = 1,
-        maxy = 1
+    id = "",
+    rect = {
+        x = 0,
+        y = 0,
+        w = 10,
+        h = 10
     },
-    padding = {
-        left = 0,
-        right = 0,
-        top = 0,
-        bottom = 0
-    },
-    color = { 0, 0, 0, 0 },
+    align = "top-left",
+    color = { 255, 255, 255, 255 },
     children = {},
     parent = nil,
     event_listeners = {}
 }
 
-function ui.Pane:New(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
+function ui.Panel:New(super)
+    super = super or {}
+    setmetatable(super, self)
+    ui.Panel.__index = self
+    return super
 end
 
-function ui.Pane:AddEventListener(type, fun)
+function ui.Panel:GetRect()
+    return self.rect
+end
+
+function ui.Panel:SetRect(x, y, w, h)
+    self.rect = {
+        x = x,
+        y = y,
+        w = w,
+        h = h
+    }
+end
+
+function ui.Panel:AddChild(child)
+    child.parent = self
+    table.insert(self.children, child)
+end
+
+function ui.Panel:RemoveChild(child)
+    for i, v in pairs(self.children) do
+        if v == child then
+            table.remove(self.children, i)
+            child.parent = nil
+            return
+        end
+    end
+end
+
+function ui.Panel:AddEventListener(type, fun)
     self.event_listeners[type] = self.event_listeners[type] or {}
 
     -- Prevent from adding event listener twice
@@ -44,7 +81,7 @@ function ui.Pane:AddEventListener(type, fun)
     table.insert(self.event_listeners[type], fun)
 end
 
-function ui.Pane:RemoveEventListener(type, fun)
+function ui.Panel:RemoveEventListener(type, fun)
     for i, v in pairs(self.event_listeners[type]) do
         if v == fun then
             table.remove(self.event_listeners[type], i)
@@ -53,7 +90,7 @@ function ui.Pane:RemoveEventListener(type, fun)
     end
 end
 
-function ui.Pane:DispatchEvent(type)
+function ui.Panel:DispatchEvent(type)
     for _, v in pairs(self.event_listeners[type]) do
         v(type)
     end
@@ -63,13 +100,14 @@ end
 
 --region Label
 
-ui.Label = ui.Pane:New({
+ui.Label = ui.Panel:New({
     text = "",
     color = { 255, 255, 255, 255 }, --default text is white
 })
 
 
 --endregion
+
 
 
 return ui

@@ -1,17 +1,29 @@
 print("Initializing core libraries")
 package.path = "./data/core/lualib/?.lua"
+
 console = require('console')
-serpent = require('serpent')
 ui = require('ui')
+dump = require('inspect')
+
+--Frequently used functions
+log = console.log
+clear = console.clear
+
+function nb()
+    local obj = ui.Panel:New()
+    return obj
+end
+
+a = ui.Panel:New()
+b = ui.Panel:New()
+a:AddChild(b)
+ui.AddElement(a)
 
 function reload()
-    console.log("Hot reloading")
     package.loaded.console = nil
     package.loaded.init = nil
-    package.loaded.serpent = nil
     package.loaded.ui = nil
     require('init')
-    console.log("Hot reloading - Complete")
 end
 
 print("Loaded!")

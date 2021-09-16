@@ -14,4 +14,4 @@ target_include_directories(stech
         src
         )
 
-target_link_libraries(stech raylib)
+target_link_libraries(stech raylib ${LUA_INCLUDE_DIR})
