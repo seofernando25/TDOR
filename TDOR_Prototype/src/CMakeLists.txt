@@ -1,5 +1,0 @@
-include_directories(${TDOR_SOURCE_DIR}/TDOR/inc)
-#include_directories(${TDOR_SOURCE_DIR}/some_lib/inc)
-#link_directories(${TDOR_SOURCE_DIR}/some_lib/src)
-add_executable(TDOR main.c)
-target_link_libraries(TDOR raylib)
