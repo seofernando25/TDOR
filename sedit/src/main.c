@@ -47,7 +47,10 @@ int main() {
     lua_State *L = luaL_newstate();
     luaL_openlibs(L); // We probably should not open sensitive libraries such as os
 
-
+    lua_pushcfunction(L, luaDrawRect);
+    lua_setglobal(L, "draw_rect");
+    lua_pushcfunction(L, luaDrawText);
+    lua_setglobal(L, "draw_text");
 
     int error = luaL_dofile(L, "data/core/lualib/init.lua");
     if (error == LUA_OK) {
@@ -79,42 +82,6 @@ int main() {
 
         // UI Stuff
 
-        // Put UI elements to top
-        QuickPushVariable(L, "ui.elements");
-        int tablePos = lua_gettop(L);
-        lua_pushnil(L);
-        while (lua_next(L, tablePos) != 0) {
-            // region Get rectangle
-            PushField(L, "rect");
-            int top = lua_gettop(L);
-            Rectangle rect = GetRect(L, top);
-            DrawRectangleRec(rect, GRAY);
-            lua_pop(L, 1);
-            // endregion
-
-            // region Get children
-            PushField(L, "children");
-            int tp = lua_gettop(L);
-            lua_pushnil(L);
-            while (lua_next(L, tp) != 0) {
-                // Get children rect
-                PushField(L, "rect");
-                Rectangle rec = GetRect(L, lua_gettop(L));
-                DrawRectangleRec(rec, GRAY);
-                lua_pop(L, 1);
-
-                lua_pop(L, 1);
-            }
-
-            lua_pop(L, 1);
-            // endregion
-
-            lua_pop(L, 1); // Clean element
-        }
-        lua_pop(L, 1); // Remove ui.elements
-
-
-
 
         // Console stuff
         // TODO Move console to UI itself
@@ -135,7 +102,7 @@ int main() {
         DrawText(luaStackSize, screenWidth - 3 * FONT_SIZE, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
 
         DrawText("Lua stack: ", 0, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
-
+        DoString(L, "draw()");
 
         EndDrawing();
         //----------------------------------------------------------------------------------

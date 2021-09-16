@@ -119,4 +119,16 @@ Rectangle GetRect(lua_State *L, int position) {
     return rect;
 }
 
+int luaDrawRect(lua_State *L) {
+    Rectangle rect = (Rectangle) {lua_tointeger(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), lua_tointeger(L, 4)};
+    Color col = (Color) {lua_tointeger(L, 5), lua_tointeger(L, 6), lua_tointeger(L, 7), lua_tointeger(L, 8)};
+    DrawRectangleRec(rect, col);
+    return 1;
+}
 
+int luaDrawText(lua_State *L) {
+    // Text - x - y - font size - color
+    Color col = (Color) {lua_tointeger(L, 5), lua_tointeger(L, 6), lua_tointeger(L, 7), lua_tointeger(L, 8)};
+    DrawText(lua_tostring(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), lua_tointeger(L, 4), col);
+    return 1;
+}

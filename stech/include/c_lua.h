@@ -29,3 +29,7 @@ Vector3 GetVector3(lua_State *L, int position);
 Vector4 GetVector4(lua_State *L, int position);
 
 Rectangle GetRect(lua_State *L, int position);
+
+int luaDrawRect(lua_State *L);
+
+int luaDrawText(lua_State *L);
