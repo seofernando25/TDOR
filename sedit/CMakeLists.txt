@@ -1,5 +1,3 @@
-include_directories(include)
-
 # Get all files inside include and src directories
 file(GLOB_RECURSE sedit_SRC_FILES src/*.c)
 file(GLOB_RECURSE sedit_INCLUDE_FILES include/*.h)

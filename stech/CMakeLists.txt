@@ -1,6 +1,3 @@
-
-include_directories(include)
-
 # Get all files inside include and src directories
 file(GLOB_RECURSE stech_SRC_FILES src/*.c)
 file(GLOB_RECURSE stech_INCLUDE_FILES include/*.h)
@@ -14,4 +11,4 @@ target_include_directories(stech
         src
         )
 
-target_link_libraries(stech raylib ${LUA_INCLUDE_DIR})
+target_link_libraries(stech raylib)
