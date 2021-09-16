@@ -7,4 +7,4 @@ include(${CMAKE_SOURCE_DIR}/cmake/EnsureRayLib.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/EnsureLua.cmake)
 
 add_subdirectory(stech)
-add_subdirectory(editor)
+add_subdirectory(sedit)
