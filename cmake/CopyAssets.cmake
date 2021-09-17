@@ -1,5 +1,0 @@
-file(GLOB ASSETS "${PROJECT_SOURCE_DIR}/data/*")
-foreach(ASSET ${ASSETS})
-    message("Processing ${ASSET}")
-    file(GENERATE OUTPUT ${ASSET} INPUT ${ASSET})
-endforeach()
