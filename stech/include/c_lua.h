@@ -1,5 +1,6 @@
 #pragma once
 
+#include <raylib.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
