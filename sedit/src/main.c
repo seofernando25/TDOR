@@ -51,14 +51,18 @@ int main()
     lua_pushcfunction(L, luaDrawText);
     lua_setglobal(L, "draw_text");
 
-    int error = luaL_dofile(L, "data/core/lualib/init.lua");
+    // NOTE Set the executable working directory to the root
+    // of the build folder
+    int error = luaL_dofile(L, "./data/core/lualib/init.lua");
     if (error == LUA_OK)
     {
         printf("Lua initialized\n");
     }
     else
     {
-        ConsoleLog(L, lua_tostring(L, -1));
+        char* error_msg = lua_tostring(L, -1);
+        printf("%s\n", error_msg);
+        //ConsoleLog(L, lua_tostring(L, -1));
     }
 
     bool wantsToClose = false;
