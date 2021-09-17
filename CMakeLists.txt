@@ -6,6 +6,7 @@ set(FETCHCONTENT_QUIET NO)
 
 include(${CMAKE_SOURCE_DIR}/cmake/EnsureRayLib.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/EnsureLua.cmake)
+file(COPY data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(stech)
 add_subdirectory(sedit)
