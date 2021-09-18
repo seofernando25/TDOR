@@ -1,14 +1,16 @@
 #include "c_lua.h"
 
-void StackDump(lua_State *L)
-{
+#define LuaToInt(L, i) (int)lua_tonumber(L, i)
+#define LuaToFloat(L, i) (float)lua_tonumber(L, i)
+#define LuaToUChar(L, i) (unsigned char)lua_tonumber(L, i)
+
+
+void StackDump(lua_State *L) {
     int i;
     int top = lua_gettop(L);
-    for (i = 1; i <= top; i++)
-    { /* repeat for each level */
+    for (i = 1; i <= top; i++) { /* repeat for each level */
         int t = lua_type(L, i);
-        switch (t)
-        {
+        switch (t) {
 
         case LUA_TSTRING: /* strings */
             printf("`%s'", lua_tostring(L, i));
@@ -19,7 +21,7 @@ void StackDump(lua_State *L)
             break;
 
         case LUA_TNUMBER: /* numbers */
-            printf("%g", lua_tonumber(L, i));
+            printf("%g", LuaToFloat(L, i));
             break;
 
         default: /* other values */
@@ -54,11 +56,10 @@ bool PushField(lua_State *L, const char *field)
     return true;
 }
 
-void QuickPushVariable(lua_State *L, const char *variable)
-{
-    char cmd[128] = "_internal_temp=";
-    strcat(cmd, variable);
-    DoString(L, cmd);
+void QuickPushVariable(lua_State *L, const char *variable) {
+    char buffer[128] = "_internal_temp=";
+    snprintf(buffer + strlen(buffer), 128 - strlen(buffer), "%s", variable);
+    DoString(L, buffer);
     lua_getglobal(L, "_internal_temp");
 }
 
@@ -91,7 +92,7 @@ Vector2 GetVector2(lua_State *L, int position)
 {
     lua_getfield(L, position, "x");
     lua_getfield(L, position, "y");
-    Vector2 vec = {lua_tonumber(L, -2), lua_tonumber(L, -1)};
+    Vector2 vec = {LuaToFloat(L, -2), LuaToFloat(L, -1)};
     lua_pop(L, 2);
     return vec;
 }
@@ -101,7 +102,7 @@ Vector3 GetVector3(lua_State *L, int position)
     lua_getfield(L, position, "x");
     lua_getfield(L, position, "y");
     lua_getfield(L, position, "z");
-    Vector3 vec = {lua_tonumber(L, -3), lua_tonumber(L, -2), lua_tonumber(L, -1)};
+    Vector3 vec = {LuaToFloat(L, -3), LuaToFloat(L, -2), LuaToFloat(L, -1)};
     lua_pop(L, 3);
     return vec;
 }
@@ -112,7 +113,7 @@ Vector4 GetVector4(lua_State *L, int position)
     lua_getfield(L, position, "y");
     lua_getfield(L, position, "z");
     lua_getfield(L, position, "w");
-    Vector4 vec = {lua_tonumber(L, -4), lua_tonumber(L, -3), lua_tonumber(L, -2), lua_tonumber(L, -1)};
+    Vector4 vec = {LuaToFloat(L, -4), LuaToFloat(L, -3), LuaToFloat(L, -2), LuaToFloat(L, -1)};
     lua_pop(L, 4);
     return vec;
 }
@@ -123,23 +124,21 @@ Rectangle GetRect(lua_State *L, int position)
     lua_getfield(L, position, "y");
     lua_getfield(L, position, "w");
     lua_getfield(L, position, "h");
-    Rectangle rect = {lua_tonumber(L, -4), lua_tonumber(L, -3), lua_tonumber(L, -2), lua_tonumber(L, -1)};
+    Rectangle rect = {LuaToFloat(L, -4), LuaToFloat(L, -3), LuaToFloat(L, -2), LuaToFloat(L, -1)};
     lua_pop(L, 4);
     return rect;
 }
 
-int luaDrawRect(lua_State *L)
-{
-    Rectangle rect = (Rectangle){lua_tointeger(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), lua_tointeger(L, 4)};
-    Color col = (Color){lua_tointeger(L, 5), lua_tointeger(L, 6), lua_tointeger(L, 7), lua_tointeger(L, 8)};
+int luaDrawRect(lua_State *L) {
+    Rectangle rect = (Rectangle) {LuaToFloat(L, 1), LuaToFloat(L, 2), LuaToFloat(L, 3), LuaToFloat(L, 4)};
+    Color col = (Color) {LuaToUChar(L, 5), LuaToUChar(L, 6), LuaToUChar(L, 7), LuaToUChar(L, 8)};
     DrawRectangleRec(rect, col);
     return 1;
 }
 
-int luaDrawText(lua_State *L)
-{
+int luaDrawText(lua_State *L) {
     // Text - x - y - font size - color
-    Color col = (Color){lua_tointeger(L, 5), lua_tointeger(L, 6), lua_tointeger(L, 7), lua_tointeger(L, 8)};
-    DrawText(lua_tostring(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), lua_tointeger(L, 4), col);
+    Color col = (Color) {LuaToInt(L, 5), LuaToInt(L, 6), LuaToInt(L, 7), LuaToInt(L, 8)};
+    DrawText(lua_tostring(L, 1), LuaToInt(L, 2), LuaToInt(L, 3), LuaToInt(L, 4), col);
     return 1;
 }
