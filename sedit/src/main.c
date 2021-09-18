@@ -1,46 +1,37 @@
 #include "raylib.h"
 
 #include "c_lua.h"
+#include "r_gui.h"
+
 
 #define CMD_BUFFER_SIZE 255
-#define FONT_SIZE 8
+#define VIRTUAL_WIDTH 640
+#define VIRTUAL_HEIGHT 480
 
-bool SInputLine(int x, int y, char *text, int buffSize, bool editMode)
-{
-    if (editMode)
-    {
-        int key = GetCharPressed(); // Returns codepoint as Unicode
-        int keyCount = (int)strlen(text);
-        bool bufferNotFull = keyCount < (buffSize - 1);
-        // Only allow keys in range [32..125]
-        if (bufferNotFull && key >= 32)
-        {
-            text[keyCount] = key;
-            keyCount++;
-            text[keyCount] = '\0';
-        }
-        else if (buffSize > 0 && IsKeyPressed(KEY_BACKSPACE))
-        {
-            keyCount--;
-            text[keyCount] = '\0';
-        }
-    }
-    DrawText(text, x, y, FONT_SIZE, BLACK);
-    return IsKeyPressed(KEY_ENTER);
-}
 
 static char consoleInputEntry[CMD_BUFFER_SIZE] = "";
 
-int main()
-{
+int main() {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    const int screenWidth = VIRTUAL_WIDTH;
+    const int screenHeight = VIRTUAL_HEIGHT;
 
-    int screenWidth = 690;
-    int screenHeight = 560;
 
     InitWindow(screenWidth, screenHeight, "TDOR Lua test");
+    SetWindowMinSize(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetExitKey(0);
     SetTargetFPS(60);
 
+    // Creates the render target
+    RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+    SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); // Make it look pixelated
+
+
+    // Initial config and stuff
+    LoadDefaultGUIStyle();
+    currentStyle.fontSize = 32;
+    currentStyle.font = LoadFont("data/core/fonts/DTM-Mono.otf");
+    currentStyle.fontColor = (Color) {255, 0, 0, 255};
     // Initializes lua
 
     lua_State *L = luaL_newstate();
@@ -60,11 +51,13 @@ int main()
     }
     else
     {
-        char* error_msg = lua_tostring(L, -1);
+        const char *error_msg = lua_tostring(L, -1);
         printf("%s\n", error_msg);
+        // Can't really log to console if this fails
         //ConsoleLog(L, lua_tostring(L, -1));
     }
 
+    int c = 0;
     bool wantsToClose = false;
     // Main game loop
     while (!wantsToClose) // Detect window close button or ESC key
@@ -73,16 +66,40 @@ int main()
         //----------------------------------------------------------------------------------
         wantsToClose = WindowShouldClose();
 
-        if (IsKeyPressed(KEY_GRAVE))
-        {
+        // region Frame buffer scaling
+        float scale = min((float) GetScreenWidth() / VIRTUAL_WIDTH, (float) GetScreenHeight() / VIRTUAL_HEIGHT);
+
+        // Update virtual mouse (clamped mouse value behind game screen)
+        Vector2 mouse = GetMousePosition();
+        Vector2 virtualMouse = {0};
+        virtualMouse.x = (mouse.x - ((float) GetScreenWidth() - (VIRTUAL_WIDTH * scale)) * 0.5f) / scale;
+        virtualMouse.y = (mouse.y - ((float) GetScreenHeight() - (VIRTUAL_HEIGHT * scale)) * 0.5f) / scale;
+        // Should we clamp the virtual mouse
+        //Draws the game texture to the screen
+        Rectangle srcRect = (Rectangle) {
+                0.0f,
+                0.0f,
+                (float) target.texture.width,
+                (float) -target.texture.height // Invert src vertically
+        };
+        Rectangle dstRect = (Rectangle) {
+                ((float) GetScreenWidth() - (VIRTUAL_WIDTH * scale)) * 0.5f, // Centered x- left
+                ((float) GetScreenHeight() - ((float) VIRTUAL_HEIGHT * scale)) * 0.5f, // Center y-middle
+                VIRTUAL_WIDTH * scale,
+                VIRTUAL_HEIGHT * scale
+        };
+
+
+        // endregion
+
+        if (IsKeyPressed(KEY_GRAVE)) {
             StackDump(L);
         }
 
         //----------------------------------------------------------------------------------
-
-        // Draw
+        // Draw to target
         //----------------------------------------------------------------------------------
-        BeginDrawing();
+        BeginTextureMode(target);
         ClearBackground(WHITE);
 
         // UI Stuff
@@ -90,9 +107,9 @@ int main()
         // Console stuff
         // TODO Move console to UI itself
 
-        DrawText(">", 0, 0, FONT_SIZE, BLACK);
-        if (SInputLine(FONT_SIZE, 0, consoleInputEntry, 255, true))
-        {
+        DrawText(">", 0, 0, currentStyle.fontSize, BLACK);
+
+        if (SInputLine(0, 0, consoleInputEntry, 255, true)) {
             ConsoleWrite(L, "]");
             ConsoleLog(L, consoleInputEntry);
             DoString(L, consoleInputEntry);
@@ -100,17 +117,37 @@ int main()
         }
 
         const char *screenBuf = GetConsoleBuffer(L);
-        DrawText(screenBuf, 0, FONT_SIZE, FONT_SIZE, BLACK);
+        SDrawText(screenBuf, 0, currentStyle.fontSize, ALIGN_START, ALIGN_START);
 
-        char luaStackSize[32];
-        sprintf(luaStackSize, "%d", lua_gettop(L));
-        DrawText(luaStackSize, screenWidth - 3 * FONT_SIZE, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
+        char luaStackSize[32] = "Lua stack: ";
+        snprintf(luaStackSize + strlen(luaStackSize), 32 - strlen(luaStackSize), "%d", lua_gettop(L));
+        SDrawText(luaStackSize, 0, screenHeight - currentStyle.fontSize, ALIGN_START, ALIGN_START);
+//        DoString(L, "draw()");
 
-        DrawText("Lua stack: ", 0, screenHeight - FONT_SIZE, FONT_SIZE, BLACK);
-        DoString(L, "draw()");
+        STextBox("This text should be perfectly centered", VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2, 16, ALIGN_CENTER,
+                 ALIGN_CENTER);
+        const char *elems[3] = {"Value 1", "Value 2", "Value 3"};
 
+        SDrawBox((Rectangle) {
+                         50,
+                         50,
+                         strlen(elems[0]) * currentStyle.fontSize,
+                         3 * currentStyle.fontSize},
+                 GetContrastingColor(currentStyle.fontColor),
+                 currentStyle.accentColor);
+        SVList(50, 50, (char **) elems, 3, &c);
+
+        EndTextureMode();
+        // region Draw to frame buffer
+
+        BeginDrawing();
+        ClearBackground(BLACK); // Clear screen background
+        DrawTexturePro(target.texture, srcRect, dstRect,
+                       (Vector2) {0, 0}, 0.0f, WHITE);
+        DrawFPS(0, 0);
         EndDrawing();
-        //----------------------------------------------------------------------------------
+
+        // endregion
     }
 
     // De-Initialization
