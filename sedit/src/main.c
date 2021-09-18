@@ -1,9 +1,11 @@
+
 #include "raylib.h"
 
 #include "c_lua.h"
 #include "r_gui.h"
 
-
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 #define CMD_BUFFER_SIZE 255
 #define VIRTUAL_WIDTH 640
 #define VIRTUAL_HEIGHT 480
@@ -59,6 +61,7 @@ int main() {
 
     int c = 0;
     bool wantsToClose = false;
+    char someText[] = "This text should be perfectly centered";
     // Main game loop
     while (!wantsToClose) // Detect window close button or ESC key
     {
@@ -67,7 +70,7 @@ int main() {
         wantsToClose = WindowShouldClose();
 
         // region Frame buffer scaling
-        float scale = min((float) GetScreenWidth() / VIRTUAL_WIDTH, (float) GetScreenHeight() / VIRTUAL_HEIGHT);
+        float scale = MIN((float) GetScreenWidth() / VIRTUAL_WIDTH, (float) GetScreenHeight() / VIRTUAL_HEIGHT);
 
         // Update virtual mouse (clamped mouse value behind game screen)
         Vector2 mouse = GetMousePosition();
@@ -124,7 +127,7 @@ int main() {
         SDrawText(luaStackSize, 0, screenHeight - currentStyle.fontSize, ALIGN_START, ALIGN_START);
 //        DoString(L, "draw()");
 
-        STextBox("This text should be perfectly centered", VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2, 16, ALIGN_CENTER,
+        STextBox(someText, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT / 2, 16, ALIGN_CENTER,
                  ALIGN_CENTER);
         const char *elems[3] = {"Value 1", "Value 2", "Value 3"};
 

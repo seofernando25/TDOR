@@ -1,7 +1,7 @@
 #pragma once
 
 #include "raylib.h"
-
+#include "string.h"
 
 typedef enum Alignment {
     ALIGN_START = 0,
@@ -16,7 +16,6 @@ typedef struct TextStyle {
     float fontSpacing;
     Color fontColor;
     Color accentColor;
-    float rotation; // Would rotate all GUI elements by rotation
 } TextStyle;
 
 TextStyle currentStyle;
@@ -28,7 +27,6 @@ void LoadDefaultGUIStyle() {
             0.f, // Font Spacing
             BLACK, // Font tint
             GREEN,
-            0, // Font Rotation
     };
 }
 
@@ -55,12 +53,10 @@ void SDrawText(const char *text, float x, float y, Alignment hAlignment, Alignme
             break;
     }
 
-    DrawTextPro(
+    DrawTextEx(
             currentStyle.font,
             text,
             (Vector2) {x + offset.x, y + offset.y},
-            (Vector2) {0, 0},
-            currentStyle.rotation,
             currentStyle.fontSize,
             currentStyle.fontSpacing,
             currentStyle.fontColor
@@ -109,19 +105,18 @@ void SDrawBox(Rectangle rect, Color fg, Color bg) {
 
 void STextBox(char *text, int x, int y, int charPerLine, Alignment hAlignment, Alignment vAlignment) {
     // Using the default values a screen should fit 40x15 characters
-    int height = strlen(text) / charPerLine + 1;
-    Rectangle rect = (Rectangle) {x, y, (charPerLine + 1) * currentStyle.fontSize / 2,
-                                  currentStyle.fontSize * (height + 0.5f)};
+    int height = (int)strlen(text) / charPerLine + 1;
+    Rectangle rect = (Rectangle) {x, y, (float)(charPerLine + 1) * currentStyle.fontSize / 2,
+                                  currentStyle.fontSize * ((float)height + 0.5f)};
     Vector2 offset = GetAlignmentOffset(rect.width, rect.height, hAlignment, vAlignment);
     rect.x += offset.x;
     rect.y += offset.y;
     SDrawBox(rect, GetContrastingColor(currentStyle.fontColor), currentStyle.accentColor);
-//    DrawRectangleLinesEx(rect, 1, currentStyle.fontColor);
     float rectCenterX = rect.x + rect.width / 2;
 
     for (int i = 0; i < height; i++) {
         int memOffset = i * charPerLine;
-        size_t end = memOffset + charPerLine;
+        int end = memOffset + charPerLine;
         char temp = text[end];
         text[end] = '\0';
         SDrawText(&text[memOffset], rectCenterX, rect.y + (float) i * currentStyle.fontSize, ALIGN_CENTER, ALIGN_START);
@@ -153,7 +148,6 @@ bool SInputLine(int x, int y, char *text, int buffSize, bool enable) {
     STextWriterHelper(text, buffSize, enable);
     SDrawText(">", x, y, ALIGN_START, ALIGN_START);
     SDrawText(text, x + currentStyle.fontSize / 2, y, ALIGN_START, ALIGN_START);
-//    DrawText(text, x, y, currentStyle.fontSize, BLACK);
     return IsKeyPressed(KEY_ENTER);
 }
 
