@@ -1,6 +1,8 @@
-#pragma once
+#ifndef TDOR_RGUI_H
+#define TDOR_RGUI_H
 
 #include "raylib.h"
+#include <string>
 
 
 typedef enum Alignment {
@@ -13,27 +15,19 @@ typedef enum Alignment {
 typedef struct TextStyle {
     Font font;
     float fontSize;
-    float fontSpacing;
     Color fontColor;
     Color accentColor;
-    float rotation; // Would rotate all GUI elements by rotation
 } TextStyle;
 
-TextStyle currentStyle;
+TextStyle currentStyle{
+        GetFontDefault(), // Font
+        16.f, // Font Size
+        BLACK, // Font tint
+        GREEN,
+};
 
-void LoadDefaultGUIStyle() {
-    currentStyle = (TextStyle) {
-            GetFontDefault(), // Font
-            16.f, // Font Size
-            0.f, // Font Spacing
-            BLACK, // Font tint
-            GREEN,
-            0, // Font Rotation
-    };
-}
-
-void SDrawText(const char *text, float x, float y, Alignment hAlignment, Alignment vAlignment) {
-    Vector2 dim = MeasureTextEx(currentStyle.font, text, currentStyle.fontSize, currentStyle.fontSpacing);
+void SDrawText(std::string text, float x, float y, Alignment hAlignment, Alignment vAlignment) {
+    Vector2 dim = MeasureTextEx(currentStyle.font, text.c_str(), currentStyle.fontSize, 0.f);
     Vector2 offset = {0};
     switch (hAlignment) {
         case ALIGN_CENTER:
@@ -57,12 +51,12 @@ void SDrawText(const char *text, float x, float y, Alignment hAlignment, Alignme
 
     DrawTextPro(
             currentStyle.font,
-            text,
-            (Vector2) {x + offset.x, y + offset.y},
-            (Vector2) {0, 0},
-            currentStyle.rotation,
+            text.c_str(),
+            {x + offset.x, y + offset.y},
+            {0, 0},
+            0,
             currentStyle.fontSize,
-            currentStyle.fontSpacing,
+            0,
             currentStyle.fontColor
     );
 }
@@ -103,29 +97,24 @@ Vector2 GetAlignmentOffset(float width, float height, Alignment hAlignment, Alig
 }
 
 void SDrawBox(Rectangle rect, Color fg, Color bg) {
-    DrawRectangleRec((Rectangle) {rect.x + 5, rect.y + 5, rect.width, rect.height}, bg);
+    DrawRectangleRec({rect.x + 5, rect.y + 5, rect.width, rect.height}, bg);
     DrawRectangleRec(rect, fg);
 }
 
-void STextBox(char *text, int x, int y, int charPerLine, Alignment hAlignment, Alignment vAlignment) {
+void STextBox(const std::string &text, int x, int y, int charPerLine, Alignment hAlignment, Alignment vAlignment) {
     // Using the default values a screen should fit 40x15 characters
-    int height = strlen(text) / charPerLine + 1;
-    Rectangle rect = (Rectangle) {x, y, (charPerLine + 1) * currentStyle.fontSize / 2,
-                                  currentStyle.fontSize * (height + 0.5f)};
+    int height = text.length() / charPerLine + 1;
+    Rectangle rect{(float) x, (float) y, (charPerLine + 1) * currentStyle.fontSize / 2,
+                   currentStyle.fontSize * (height + 0.5f)};
     Vector2 offset = GetAlignmentOffset(rect.width, rect.height, hAlignment, vAlignment);
     rect.x += offset.x;
     rect.y += offset.y;
     SDrawBox(rect, GetContrastingColor(currentStyle.fontColor), currentStyle.accentColor);
-//    DrawRectangleLinesEx(rect, 1, currentStyle.fontColor);
     float rectCenterX = rect.x + rect.width / 2;
 
     for (int i = 0; i < height; i++) {
-        int memOffset = i * charPerLine;
-        size_t end = memOffset + charPerLine;
-        char temp = text[end];
-        text[end] = '\0';
-        SDrawText(&text[memOffset], rectCenterX, rect.y + (float) i * currentStyle.fontSize, ALIGN_CENTER, ALIGN_START);
-        text[end] = temp;
+        std::string sub = text.substr(i * charPerLine, charPerLine);
+        SDrawText(sub, rectCenterX, rect.y + (float) i * currentStyle.fontSize, ALIGN_CENTER, ALIGN_START);
     }
 }
 
@@ -134,7 +123,7 @@ bool STextWriterHelper(char *text, int buffSize, bool enable) {
         return false;
 
     int key = GetCharPressed(); // Returns codepoint as Unicode
-    int curCount = (int) strlen(text);
+    int curCount = (int) (text);
     bool bufferNotFull = curCount < (buffSize - 1);
     // Only allow keys in range [32..125]
     if (bufferNotFull && key >= 32) {
@@ -151,8 +140,8 @@ bool STextWriterHelper(char *text, int buffSize, bool enable) {
 
 bool SInputLine(int x, int y, char *text, int buffSize, bool enable) {
     STextWriterHelper(text, buffSize, enable);
-    SDrawText(">", x, y, ALIGN_START, ALIGN_START);
-    SDrawText(text, x + currentStyle.fontSize / 2, y, ALIGN_START, ALIGN_START);
+    SDrawText(">", (float) x, (float) y, ALIGN_START, ALIGN_START);
+    SDrawText(text, (float) x + currentStyle.fontSize / 2, (float) y, ALIGN_START, ALIGN_START);
 //    DrawText(text, x, y, currentStyle.fontSize, BLACK);
     return IsKeyPressed(KEY_ENTER);
 }
@@ -170,9 +159,12 @@ int SVList(int x, int y, char **items, int itemC, int *current) {
 
     for (int i = 0; i < itemC; ++i) {
         if (*current == i)
-            SDrawText(">", x, y + i * (float) currentStyle.fontSize, ALIGN_START, ALIGN_START);
-        SDrawText(items[i], x + currentStyle.fontSize / 2, y + i * (float) currentStyle.fontSize, ALIGN_START,
+            SDrawText(">", (float) x, (float) y + (float) i * (float) currentStyle.fontSize, ALIGN_START, ALIGN_START);
+        SDrawText(items[i], x + currentStyle.fontSize / 2, (float) y + (float) i * (float) currentStyle.fontSize,
+                  ALIGN_START,
                   ALIGN_START);
     }
+    return IsKeyPressed(KEY_ENTER);
 }
 
+#endif

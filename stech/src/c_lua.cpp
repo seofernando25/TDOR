@@ -130,15 +130,15 @@ Rectangle GetRect(lua_State *L, int position)
 }
 
 int luaDrawRect(lua_State *L) {
-    Rectangle rect = (Rectangle) {LuaToFloat(L, 1), LuaToFloat(L, 2), LuaToFloat(L, 3), LuaToFloat(L, 4)};
-    Color col = (Color) {LuaToUChar(L, 5), LuaToUChar(L, 6), LuaToUChar(L, 7), LuaToUChar(L, 8)};
+    Rectangle rect{LuaToFloat(L, 1), LuaToFloat(L, 2), LuaToFloat(L, 3), LuaToFloat(L, 4)};
+    Color col{LuaToUChar(L, 5), LuaToUChar(L, 6), LuaToUChar(L, 7), LuaToUChar(L, 8)};
     DrawRectangleRec(rect, col);
     return 1;
 }
 
 int luaDrawText(lua_State *L) {
     // Text - x - y - font size - color
-    Color col = (Color) {LuaToInt(L, 5), LuaToInt(L, 6), LuaToInt(L, 7), LuaToInt(L, 8)};
+    Color col{LuaToUChar(L, 5), LuaToUChar(L, 6), LuaToUChar(L, 7), LuaToUChar(L, 8)};
     DrawText(lua_tostring(L, 1), LuaToInt(L, 2), LuaToInt(L, 3), LuaToInt(L, 4), col);
     return 1;
 }

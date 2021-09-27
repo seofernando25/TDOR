@@ -1,7 +1,9 @@
 #include "raylib.h"
-
+#include <algorithm>
 #include "c_lua.h"
 #include "r_gui.h"
+#include <UILabel.h>
+#include <UIList.h>
 
 
 #define CMD_BUFFER_SIZE 255
@@ -12,6 +14,7 @@
 static char consoleInputEntry[CMD_BUFFER_SIZE] = "";
 
 int main() {
+
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     const int screenWidth = VIRTUAL_WIDTH;
     const int screenHeight = VIRTUAL_HEIGHT;
@@ -28,10 +31,16 @@ int main() {
 
 
     // Initial config and stuff
-    LoadDefaultGUIStyle();
+
     currentStyle.fontSize = 32;
     currentStyle.font = LoadFont("data/core/fonts/DTM-Mono.otf");
-    currentStyle.fontColor = (Color) {255, 0, 0, 255};
+    UILabel my_label(currentStyle.font, "Hello amongus");
+    std::vector<std::string> list_elems{"iTEM 1", "IteM 2", "TEST 3", "Something 5", "other thing", "wow what??",
+                                        "le litem", "Pog champ", "pong poing"};
+    UIList my_list(currentStyle.font, list_elems);
+    my_list.position.x = 150;
+    my_list.maxWidth = 2;
+    currentStyle.fontColor = {255, 0, 0, 255};
     // Initializes lua
 
     lua_State *L = luaL_newstate();
@@ -67,7 +76,7 @@ int main() {
         wantsToClose = WindowShouldClose();
 
         // region Frame buffer scaling
-        float scale = min((float) GetScreenWidth() / VIRTUAL_WIDTH, (float) GetScreenHeight() / VIRTUAL_HEIGHT);
+        float scale = std::min((float) GetScreenWidth() / VIRTUAL_WIDTH, (float) GetScreenHeight() / VIRTUAL_HEIGHT);
 
         // Update virtual mouse (clamped mouse value behind game screen)
         Vector2 mouse = GetMousePosition();
@@ -76,13 +85,13 @@ int main() {
         virtualMouse.y = (mouse.y - ((float) GetScreenHeight() - (VIRTUAL_HEIGHT * scale)) * 0.5f) / scale;
         // Should we clamp the virtual mouse
         //Draws the game texture to the screen
-        Rectangle srcRect = (Rectangle) {
+        Rectangle srcRect{
                 0.0f,
                 0.0f,
                 (float) target.texture.width,
                 (float) -target.texture.height // Invert src vertically
         };
-        Rectangle dstRect = (Rectangle) {
+        Rectangle dstRect = {
                 ((float) GetScreenWidth() - (VIRTUAL_WIDTH * scale)) * 0.5f, // Centered x- left
                 ((float) GetScreenHeight() - ((float) VIRTUAL_HEIGHT * scale)) * 0.5f, // Center y-middle
                 VIRTUAL_WIDTH * scale,
@@ -100,14 +109,14 @@ int main() {
         // Draw to target
         //----------------------------------------------------------------------------------
         BeginTextureMode(target);
-        ClearBackground(WHITE);
+        ClearBackground(GRAY);
 
         // UI Stuff
 
         // Console stuff
         // TODO Move console to UI itself
 
-        DrawText(">", 0, 0, currentStyle.fontSize, BLACK);
+        DrawText(">", 0, 0, (int) currentStyle.fontSize, BLACK);
 
         if (SInputLine(0, 0, consoleInputEntry, 255, true)) {
             ConsoleWrite(L, "]");
@@ -128,7 +137,7 @@ int main() {
                  ALIGN_CENTER);
         const char *elems[3] = {"Value 1", "Value 2", "Value 3"};
 
-        SDrawBox((Rectangle) {
+        SDrawBox({
                          50,
                          50,
                          strlen(elems[0]) * currentStyle.fontSize,
@@ -137,13 +146,15 @@ int main() {
                  currentStyle.accentColor);
         SVList(50, 50, (char **) elems, 3, &c);
 
+//        my_label.draw();
+        my_list.draw();
         EndTextureMode();
         // region Draw to frame buffer
 
         BeginDrawing();
         ClearBackground(BLACK); // Clear screen background
         DrawTexturePro(target.texture, srcRect, dstRect,
-                       (Vector2) {0, 0}, 0.0f, WHITE);
+                       {0, 0}, 0.0f, WHITE);
         DrawFPS(0, 0);
         EndDrawing();
 

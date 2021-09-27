@@ -1,14 +1,14 @@
 #pragma once
 
 #include <raylib.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
+#include <cstdlib>
+#include <string>
 
-
+extern "C" {
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+}
 
 
 void StackDump(lua_State *L);

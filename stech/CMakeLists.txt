@@ -1,6 +1,7 @@
 # Get all files inside include and src directories
-file(GLOB_RECURSE stech_SRC_FILES src/*.c)
+file(GLOB_RECURSE stech_SRC_FILES src/*.cpp)
 file(GLOB_RECURSE stech_INCLUDE_FILES include/*.h)
+
 
 # Add files to library
 add_library(stech ${stech_SRC_FILES} ${stech_INCLUDE_FILES})
