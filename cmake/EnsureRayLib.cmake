@@ -6,6 +6,5 @@ if (NOT raylib_FOUND)
             raylib
             URL https://github.com/raysan5/raylib/archive/master.tar.gz
     )
-
     FetchContent_MakeAvailable(raylib)
 endif()
