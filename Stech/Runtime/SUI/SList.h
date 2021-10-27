@@ -2,29 +2,30 @@
 // Created by fer on 9/27/2021.
 //
 
-#ifndef TDOR_UILIST_H
-#define TDOR_UILIST_H
+#ifndef TDOR_SLIST_H
+#define TDOR_SLIST_H
 
 #include <string>
 #include <vector>
-#include "UIDrawable.h"
+#include "SDrawable.h"
 #include <raylib.h>
 
-class UIList : public UIDrawable {
+class SList : public SDrawable {
 public:
-    void Draw() override;
+    SList(const Font &font, std::vector<std::string> &elements);
+    void Draw(RelativeRect parentRect) override;
+    void Update(float dt);
 
-    void Update() override;
-
-    UIList(const Font &font, std::vector<std::string> &elements);
 
     Font font;
-    bool focused = false;
     unsigned int currentSelected = 0;
+
+    void OnClick() override;
+
+
     unsigned int maxWidth = 2;
     std::vector<std::string> &elements;
-
 };
 
 
-#endif //TDOR_UILIST_H
+#endif //TDOR_SLIST_H

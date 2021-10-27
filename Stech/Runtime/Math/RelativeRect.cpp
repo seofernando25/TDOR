@@ -47,3 +47,15 @@ float RelativeRect::GetW() {
 float RelativeRect::GetH() {
     return parentDimensions.y * anchorMax.y - GetY();
 }
+
+RelativeRect RelativeRect::ChildTransform(RelativeRect child) const {
+    // Get a relative rect inside a relative rect
+    RelativeRect ret;
+    ret.parentDimensions = parentDimensions;
+    ret.anchorMin.x = anchorMin.x + (anchorMax.x - anchorMin.x) * child.anchorMin.x;
+    ret.anchorMin.y = anchorMin.y + (anchorMax.y - anchorMin.y) * child.anchorMin.y;
+
+    ret.anchorMax.x = anchorMin.x + (anchorMax.x - anchorMin.x) * child.anchorMax.x;
+    ret.anchorMax.y = anchorMin.y + (anchorMax.y - anchorMin.y) * child.anchorMax.y;
+    return ret;
+}

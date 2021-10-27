@@ -9,21 +9,23 @@
 #include <string>
 #include <raylib.h>
 #include <vector>
-#include <Scene/Scene.h>
+class LevelGeometry;
+#include <Scene/LevelGeometry.h>
 
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
 
 
+
 class Application {
 public:
     Application(const std::string &name = "Stech", int window_w = DEFAULT_WIDTH, int window_h = DEFAULT_HEIGHT);
-
     void Run();
+    Vector2 GetVirtualMousePosition();
 
     RenderTexture2D renderTarget;
     static Application *instance;
-    std::vector<Scene *> scenes;
+    std::vector<LevelGeometry *> scenes;
 };
 
 

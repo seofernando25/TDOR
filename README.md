@@ -20,5 +20,5 @@ You can find the original game [here](https://github.com/SeoFernando25/The-dawn-
   - [ ] UI/UX overhaul
   - [ ] Menu effects (Starfield, Sierpiński triangle)
 - [ ] Other Technologies
-  - [ ] Level editor
+  - [ ] LevelGeometry editor
   - [ ] Scripting Interface (Lua)

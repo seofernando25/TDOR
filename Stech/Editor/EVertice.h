@@ -6,11 +6,11 @@
 #define TDOR_EVERTICE_H
 
 
+#include <Entities/Entity.h>
 
-class EVertice {
+class EVertice: public Entity {
 
 };
-
 
 
 #endif //TDOR_EVERTICE_H

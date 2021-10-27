@@ -2,18 +2,37 @@
 // Created by fer on 9/27/2021.
 //
 
-#include "UIList.h"
+#include "SList.h"
 
 #define LIST_FONT_SIZE 32
 
-void UIList::Draw() {
-    if (!visible)
+
+void SList::Update(float dt) {
+    if (!focused)
         return;
 
+    int change = -(int) IsKeyPressed(KEY_LEFT) + (int) IsKeyPressed(KEY_RIGHT)
+                 - maxWidth * (int) IsKeyPressed(KEY_UP) + maxWidth * (int) IsKeyPressed(KEY_DOWN);
+    int t = (int) currentSelected + change;
+    t -= (t >= (int) elements.size()) * t; // Resets to zero if exceeded
+    t += (t < 0) * (-t + elements.size() - 1); // Resets to max if less than zero
+    currentSelected = (unsigned int) t;
+}
+
+SList::SList(const Font &font, std::vector<std::string> &elements) : font(font), elements(elements) {
+    this->font = font;
+    this->elements = elements;
+}
+
+void SList::Draw(RelativeRect parentRect) {
+    if(!visible)
+        return;
+
+    RelativeRect rect = parentRect.ChildTransform(relativeRect);
     for (unsigned int item_i = 0; item_i < elements.size(); ++item_i) {
         unsigned int h = item_i / maxWidth;
         Vector2 offset{(float) (item_i % maxWidth * 10) * LIST_FONT_SIZE, (float) h * LIST_FONT_SIZE};
-        Vector2 pos{position.GetX() + offset.x, position.GetY() + offset.y};
+        Vector2 pos{rect.GetX() + offset.x, rect.GetY() + offset.y};
 
         if (item_i == currentSelected) {
             // Draw *
@@ -39,21 +58,9 @@ void UIList::Draw() {
     }
 }
 
-void UIList::Update() {
-    if (!focused)
-        return;
+void SList::OnClick() {
 
-    int change = -(int) IsKeyPressed(KEY_LEFT) + (int) IsKeyPressed(KEY_RIGHT)
-                 - maxWidth * (int) IsKeyPressed(KEY_UP) + maxWidth * (int) IsKeyPressed(KEY_DOWN);
-    int t = (int) currentSelected + change;
-    t -= (t >= (int) elements.size()) * t; // Resets to zero if exceeded
-    t += (t < 0) * (-t + elements.size() - 1); // Resets to max if less than zero
-    currentSelected = (unsigned int) t;
 }
 
-UIList::UIList(const Font &font, std::vector<std::string> &elements) : font(font), elements(elements) {
-    this->font = font;
-    this->elements = elements;
-}
 
 

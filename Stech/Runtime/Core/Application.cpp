@@ -11,12 +11,12 @@ Application::Application(const std::string &name, int window_w, int window_h) {
     instance = this;
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(window_w, window_h, name.c_str());
-    SetWindowMinSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    SetWindowMinSize(window_w/2, window_h/2);
     SetExitKey(0);
     SetTargetFPS(60);
 
     // Creates the main render target
-    renderTarget = LoadRenderTexture(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    renderTarget = LoadRenderTexture(window_w, window_h);
     SetTextureFilter(renderTarget.texture, TEXTURE_FILTER_POINT); // Make it look pixelated
 }
 
@@ -28,10 +28,7 @@ void Application::Run() {
         wantsToClose = WindowShouldClose();
 
         // region Frame buffer scaling
-        float scale = std::min((float) GetScreenWidth() / DEFAULT_WIDTH, (float) GetScreenHeight() / DEFAULT_HEIGHT);
-
-        // Should we clamp the virtual mouse
-        //Draws the game texture to the screen
+        float scale = std::min((float) GetScreenWidth() / renderTarget.texture.width, (float) GetScreenHeight() / renderTarget.texture.height);
         Rectangle srcRect{
                 0.0f,
                 0.0f,
@@ -39,18 +36,18 @@ void Application::Run() {
                 (float) -renderTarget.texture.height // Invert src vertically
         };
         Rectangle dstRect = {
-                ((float) GetScreenWidth() - (DEFAULT_WIDTH * scale)) * 0.5f, // Centered x- left
-                ((float) GetScreenHeight() - ((float) DEFAULT_HEIGHT * scale)) * 0.5f, // Center y-middle
-                DEFAULT_WIDTH * scale,
-                DEFAULT_HEIGHT * scale
+                ((float) GetScreenWidth() - (renderTarget.texture.width * scale)) * 0.5f, // Centered x- left
+                ((float) GetScreenHeight() - ((float) renderTarget.texture.height * scale)) * 0.5f, // Center y-middle
+                renderTarget.texture.width * scale,
+                renderTarget.texture.height * scale
         };
         // endregion
+
 
         // region Update
         float dt = GetFrameTime();
         for (const auto &scene: scenes) {
-            if (scene->shouldUpdate)
-                scene->Update(dt);
+//            scene->Update(dt);
         }
         // endregion
 
@@ -59,8 +56,8 @@ void Application::Run() {
         ClearBackground(BLACK);
 
         for (const auto &scene: scenes) {
-            if (scene->shouldDraw)
-                scene->Draw();
+            // TODO what if we have no cameras? How do we specify that we want to render n player or certain camera?
+//            scene->Render(renderTarget);
         }
         EndTextureMode();
         // endregion
@@ -75,4 +72,13 @@ void Application::Run() {
     }
 
     CloseWindow();
+}
+
+Vector2 Application::GetVirtualMousePosition() {
+    float scale = std::min((float) GetScreenWidth() / renderTarget.texture.width, (float) GetScreenHeight() / renderTarget.texture.height);
+    Vector2 mouse = GetMousePosition();
+    Vector2 virtualMouse = {0};
+    virtualMouse.x = (mouse.x - (GetScreenWidth() - (renderTarget.texture.width * scale)) * 0.5f) / scale;
+    virtualMouse.y = (mouse.y - (GetScreenHeight() - (renderTarget.texture.height * scale)) * 0.5f) / scale;
+    return virtualMouse;
 }

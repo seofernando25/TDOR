@@ -17,20 +17,14 @@ public:
     Rectangle GetRect() const;
 
     float GetX();
-
     float GetY();
-
     float GetW();
-
     float GetH();
-
     void SetX(float x);
-
     void SetY(float y);
-
     void SetW(float w);
-
     void SetH(float h);
+    RelativeRect ChildTransform(RelativeRect child) const;
 };
 
 

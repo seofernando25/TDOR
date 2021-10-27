@@ -44,7 +44,7 @@ void VertexTool::Update() {
 
         // Delete vertex
         if (IsMouseButtonDown(1) && hoveringSomething){
-            StechEditor::instance->levelGeometry.vertex.erase(StechEditor::instance->levelGeometry.vertex.begin() + hoveredIndex);
+            StechEditor::instance->levelGeometry.RemoveVertex(hoveredIndex);
             selectedVertex = -1;
         }
     }

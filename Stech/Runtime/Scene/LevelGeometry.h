@@ -6,34 +6,22 @@
 #define SCENE_H
 
 
-#include <string>
+#include "raylib.h"
 #include <vector>
-#include <raylib.h>
-#include <Entities/Entity.h>
-class SDrawable;
-#include <SUI/SDrawable.h>
-class Thinker;
-#include <Core/Thinker.h>
-#include "Wall.h"
-#include "SectorDef.h"
 
 // Map definition
-class LevelStatic {
+class LevelGeometry {
 public:
     std::vector<Vector2> vertex;
-    std::vector<Vector2> walls; // List of N walls from (wall_start, wall_end)
+    // std::vector<SectorDef> sectorsDef;
+    // Lists of walls may represent sectors
+    // std::vector<std::vector<int>> sectors;
+    std::vector<Vector2> lines; // points to two vertexes
 
-//    std::vector<SectorDef> sectors;
-//    Camera* mainCamera;
-//    std::string name = "Scene";
-//    std::vector<Entity *> entities;
-//    std::vector<SDrawable *> uiEntities;
-//    std::vector<Thinker*> thinkers;
-//    void Update(float dt);
-//    void Render(RenderTexture target);
-//private:
-//    void UpdateUI(RenderTexture target);
+    bool RemoveVertex(int vertexIndex);
 };
+
+
 
 
 #endif //SCENE_H

@@ -21,11 +21,11 @@ target_link_libraries(Stech raylib ${LUA_LIBRARIES})
 
 # Compile the editor
 file(GLOB_RECURSE Stech-EDITOR_FILES Editor/**)
-
 add_executable(StechEditor ${Stech-EDITOR_FILES})
 target_include_directories(StechEditor
         PUBLIC
         Editor
+
         )
 
-target_link_libraries(StechEditor Stech ${RAYLIB_LIBRARIES} ${LUA_LIBRARIES})
+target_link_libraries(StechEditor Stech ${RAYLIB_LIBRARIES} ${LUA_LIBRARIES} imgui::imgui ${SDL2_LIBRARIES})

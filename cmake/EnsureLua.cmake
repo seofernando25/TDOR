@@ -3,6 +3,7 @@ include(FindLua)
 find_package(Lua QUIET)
 
 if (NOT LUA_FOUND)
+    message("Downloading Lua")
     FetchContent_Declare(
             lua
             GIT_REPOSITORY https://github.com/marovira/lua

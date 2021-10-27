@@ -1,6 +1,7 @@
 #pragma once
 
 // stdlib
+#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -20,9 +21,9 @@
 #include <future>
 #include <condition_variable>
 
+// Window and renderer
+#include <SDL2/SDL.h>
+#include "SGL.h"
 
 // logging
-#include "SDL.h"
-
-// vendor
-#include "glad/glad.h"
+#include <SDL2/SDL_log.h>

@@ -10,12 +10,10 @@
 
 class WallTool: public EditorTool{
 public:
+    int selectedVertex = -1;
     void Update() override;
-
     void DrawUI() override;
-
     void AfterDrawCanvas() override;
-
     void PreDrawCanvas() override;
 };
 

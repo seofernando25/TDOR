@@ -2,30 +2,38 @@
 // Created by fer on 10/11/2021.
 //
 
-#ifndef TDOR_BUFFERLAYOUT_H
-#define TDOR_BUFFERLAYOUT_H
+#ifndef TDOR_BUFFERELEMENT_H
+#define TDOR_BUFFERELEMENT_H
 
+#include <cstddef>
+#include "glad.h"
 
-#include <initializer_list>
-#include "glad/glad.h"
+namespace SGL {
+    class BufferElement {
+    public:
+        BufferElement(GLuint dataT = GL_FLOAT, GLuint itemCnt = 3, bool normalized = false): dataType(dataT), itemCount(itemCnt), normalized(normalized){}
 
-struct BufferElement
-{
-    GLuint dataType;
-    bool normalized;
-    GLuint size;
-    GLuint offset;
-};
+        GLuint dataType;
+        GLuint itemCount;
+        bool normalized;
 
-class BufferLayout{
-public:
-    BufferLayout() {};
+        size_t GetDataTypeSize() {
+            switch (dataType) {
+                case GL_INT:
+                    return sizeof(int);
+                case GL_UNSIGNED_INT:
+                    return sizeof(unsigned int);
+                case GL_BOOL:
+                    return sizeof(bool);
+                case GL_FLOAT:
+                    return sizeof(float);
+            }
+            return 0;
+        }
 
-    BufferLayout(std::initializer_list<int> elements);
-    unsigned int GetStride();
-private:
-    std::vector<BufferElement> elements;
-};
-
-
-#endif //TDOR_BUFFERLAYOUT_H
+        size_t GetStride()  {
+            return GetDataTypeSize() * itemCount;
+        }
+    };
+}
+#endif //TDOR_BUFFERELEMENT_H

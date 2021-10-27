@@ -2,22 +2,20 @@
 // Created by fer on 9/27/2021.
 //
 
-#ifndef TDOR_UILABEL_H
-#define TDOR_UILABEL_H
+#ifndef TDOR_SLABEL_H
+#define TDOR_SLABEL_H
 
-#include "UIDrawable.h"
+#include "SDrawable.h"
 #include <string>
 #include "raylib.h"
 
 #define DEFAULT_TEXT_SIZE 32
 
-class UILabel : public UIDrawable {
+class SLabel : public SDrawable {
 public:
-    UILabel(const Font &font, const std::string &text);
+    SLabel(const Font &font, const std::string &text);
 
-    void Draw() override;
 
-    void Update() override;
 
     Font font;
     Color fontColor = {255, 255, 255, 255};
@@ -29,4 +27,4 @@ public:
 };
 
 
-#endif //TDOR_UILABEL_H
+#endif //TDOR_SLABEL_H

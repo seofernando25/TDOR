@@ -6,15 +6,16 @@
 #define TDOR_EPAWN_H
 
 
-#include "ECamera.h"
+#include "Entity.h"
 
-class EPawn : public ECamera {
+// Like a first person player, should probably work more on it
+class EPawn : public Entity {
 public:
-    float rotAngle = -PI / 2;
-
-    void Update(float dt) override;
-
-//    void Draw(Camera cam) override;
+    int mass = 100;
+    int health = 100;
+    float rotation = -PI / 2;
+    float radius = 0.5f;
+    float height = 1.0f;
 };
 
 
