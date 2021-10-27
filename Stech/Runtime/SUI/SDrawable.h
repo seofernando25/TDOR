@@ -11,17 +11,13 @@
 
 class UIDrawable {
 public:
-    void draw() { if (visible) draw(); };
-
-    void update() { if (updatable) Update(); };
-
     bool visible = true;
     bool updatable = true;
     RelativeRect position;
 
-    virtual void Draw() = 0;
+    virtual void Draw() {};
 
-    virtual void Update() = 0;
+    virtual void Update() {};
 };
 
 

@@ -1,0 +1,8 @@
+//
+// Created by fer on 10/5/2021.
+//
+
+#ifndef TDOR_COLLISIONCHECKS_H
+#define TDOR_COLLISIONCHECKS_H
+
+#endif //TDOR_COLLISIONCHECKS_H

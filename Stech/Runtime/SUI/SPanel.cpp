@@ -19,6 +19,4 @@ void UIPanel::Draw() {
                   BLACK);
 }
 
-void UIPanel::Update() {
 
-}
